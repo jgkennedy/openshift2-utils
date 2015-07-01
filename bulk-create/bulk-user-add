@@ -10,15 +10,23 @@ puts
 
 1.upto(10).each do |x|
   login = "jk+#{x}@redhat.com"
-  print "Adding subaccount for #{login}... "
-  user = CloudUser.new(login: login)
-  user.subaccounts = true
-  if user.save
-    puts "Done."
-  else
-    puts "An error occurred adding the sub account #{subaccount_login}."
-    puts "Errors: #{child_user.errors.messages}"
+  begin
+    user = CloudUser::find_by_identity(login)
+    next
+  rescue Mongoid::Errors::DocumentNotFound
+    print "Adding account for #{login}... "
+    user = CloudUser.new(login: login)
+    user.subaccounts = true
+    if user.save
+      puts "Done."
+    else
+      puts "An error occurred adding the account #{login}."
+      puts "Errors: #{user.errors.messages}"
+    end
   end
+
+
+
   begin
     user = CloudUser.find_by_identity(login)
     user.max_gears = 20
