@@ -11,7 +11,8 @@ puts
 1.upto(10).each do |x|
   login = "jk+#{x}@redhat.com"
   print "Adding subaccount for #{login}... "
-  user = CloudUser.new(login: subaccount_login, parent_user_id: user._id)
+  user = CloudUser.new(login: login)
+  user.subaccounts = true
   if user.save
     puts "Done."
   else
@@ -19,7 +20,7 @@ puts
     puts "Errors: #{child_user.errors.messages}"
   end
   begin
-    #user = CloudUser.find_by_identity(login)
+    user = CloudUser.find_by_identity(login)
     user.max_gears = 20
 
     1.upto(20).each do |y|
