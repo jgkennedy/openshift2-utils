@@ -8,7 +8,8 @@
 #
 
 if [ \! -d /var/lib/openshift/${2}-${1} ]; then
-  htpasswd -b /etc/openshift/htpasswd "$1" redhat
+  htpasswd -b /etc/openshift/htpasswd "$1" redhat &> /dev/null
   curl -X POST -k -u $1:redhat -H "Content-Type: application/json" -d '{ "name": "'$2'", "cartridges": ["'$3'"], "domain_id": "'$1'", "application": { "name": "'$2'" } }' https://broker.hosts.example.com/broker/rest/applications
+  echo -e "\n\n"
   #curl -X POST -k -u $1:pass -H "Content-Type: application/json" -d '{ "event": "stop", "domain_id": "'$1'", "application_id": "'$2'", "app_event": { "event": "stop" } }' https://localhost/broker/rest/application/$2/events
 fi
