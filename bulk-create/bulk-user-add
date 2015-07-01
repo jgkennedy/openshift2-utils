@@ -1,0 +1,44 @@
+#!/usr/bin/env oo-ruby
+
+require '/var/www/openshift/broker/config/environment'
+# Disable analytics for admin scripts
+Rails.configuration.analytics[:enabled] = false
+puts
+puts
+
+# Create 20 subaccounts for each of 10 logins
+
+1.upto(10).each do |x|
+  login = "agrimm+#{x}@redhat.com"
+  begin
+    user = CloudUser.find_by_identity(login)
+    user.max_gears = 20
+
+    1.upto(20).each do |y|
+      subaccount_login = "user#{x}s#{y}"
+      begin
+        child_user = CloudUser::find_by_identity(subaccount_login)
+        next if child_user.max_gears == 20
+        puts "Setting max gears to 20 for #{subaccount_login}"
+        child_user.max_gears = 20
+        child_user.save
+        next
+      rescue Mongoid::Errors::DocumentNotFound
+        child_user = nil
+      end
+
+      print "Adding subaccount for #{subaccount_login} under #{user.login}... "
+      child_user = CloudUser.new(login: subaccount_login, parent_user_id: user._id)
+      child_user.max_gears = 20
+      if child_user.save
+        puts "Done."
+      else
+        puts "An error occurred adding the sub account #{subaccount_login}."
+        puts "Errors: #{child_user.errors.messages}"
+      end
+      Lock.create_lock(child_user)
+    end
+  rescue Mongoid::Errors::DocumentNotFound
+    puts "Error: User '#{login}' not found"
+  end
+end

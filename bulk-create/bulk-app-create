@@ -1,0 +1,15 @@
+#!/bin/sh
+
+#
+# Create apps for a user's subaccounts
+#
+# Assumes username format user#s# and domain namespace == username
+#
+
+for y in $( seq 1 20 )
+do
+	for z in $( seq 1 10 )
+	do
+		./create-app.sh user${1}s${y} app${z}
+	done
+done
